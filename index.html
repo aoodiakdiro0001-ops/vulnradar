@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VulnRadar | CVE Tracker + Bug Bounty Board + Exploit Search</title>
+<meta name="description" content="Free niche threat-intel dashboard: live CVE tracker, bug bounty programs board, exploit search, instant alerts.">
+<link rel="canonical" href="https://aoodiakdiro0001-ops.github.io/vulnradar/">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0a0e1a">
+<meta property="og:type" content="website">
+<meta property="og:title" content="VulnRadar | CVE Tracker + Bounty Board">
+<meta property="og:description" content="Live CVE feed, bug bounty programs in one board, exploit search, instant alerts.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Consolas,monospace}
+:root{--bg:#0a0e1a;--panel:#111830;--line:#26315a;--grn:#34d399;--red:#f87171;--org:#fb923c;--ylw:#fbbf24;--blu:#60a5fa;--cyn:#22d3ee;--txt:#dbe4f3;--mut:#8b98b8}
+body{background:var(--bg);color:var(--txt)}
+header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font-size:22px;font-weight:900;color:var(--cyn)}
+.logo small{display:block;font-size:11px;color:var(--mut);font-weight:400}
+.live{font-size:11px;font-weight:800;color:var(--grn);border:1px solid var(--grn);border-radius:12px;padding:3px 10px}
+header select{margin-left:auto;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:7px 10px;font-size:13px}
+.tabs{display:flex;gap:8px;padding:14px 20px 0;flex-wrap:wrap}
+.tabs button{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-bottom:none;padding:11px 18px;border-radius:12px 12px 0 0;cursor:pointer;font-weight:800;font-size:13.5px}
+.tabs button.on{background:#182246;color:var(--cyn)}
+main{max-width:1100px;margin:0 auto;padding:18px 15px 60px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:0 14px 14px 14px;padding:22px;display:none}
+.panel.on{display:block}
+.panel h2{color:var(--cyn);margin-bottom:6px;font-size:20px}
+.panel p.sub{color:var(--mut);font-size:13px;margin-bottom:12px;line-height:1.7}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;align-items:center}
+input[type=text],input[type=number],select,textarea{background:#0a0e1a;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px 14px;font-size:13.5px;outline:none}
+input[type=text]{min-width:180px}
+button.go{background:var(--cyn);color:#062a30;border:none;padding:10px 22px;border-radius:10px;font-weight:900;cursor:pointer;font-size:14px}
+button.alt{background:transparent;color:var(--blu);border:1px solid var(--blu);padding:9px 16px;border-radius:10px;cursor:pointer;font-size:13px}
+button.sm{padding:6px 12px;font-size:12px}
+.note{background:#182246;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--mut);margin:10px 0;line-height:1.7}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:12px}
+.card{background:#0a0e1a;border:1px solid var(--line);border-left:5px solid var(--mut);border-radius:12px;padding:14px;font-size:13px}
+.card.crit{border-left-color:var(--red)} .card.high{border-left-color:var(--org)} .card.med{border-left-color:var(--ylw)} .card.low{border-left-color:var(--grn)}
+.card .cid{font-weight:900;font-size:14.5px;color:var(--cyn);direction:ltr;display:inline-block}
+.badge{font-size:10.5px;font-weight:900;padding:3px 10px;border-radius:10px;margin-left:8px}
+.crit .badge{background:#3f1d1d;color:var(--red)} .high .badge{background:#3d2410;color:var(--org)} .med .badge{background:#3a2c10;color:var(--ylw)} .low .badge{background:#0e2a1d;color:var(--grn)} .na .badge{background:#222a44;color:var(--mut)}
+.newtag{font-size:10.5px;font-weight:900;padding:3px 10px;border-radius:10px;background:var(--grn);color:#06281c;margin-left:6px}
+.card p.sum{color:var(--txt);margin:8px 0;line-height:1.6}
+.card small{color:var(--mut)}
+.card .refs{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.card .refs a{font-size:11.5px;color:var(--blu);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:3px 9px}
+table.bt{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+table.bt th,table.bt td{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top}
+table.bt th{color:var(--cyn);font-size:12px}
+table.bt a{color:var(--blu);font-weight:700;text-decoration:none}
+.tier{color:var(--grn);font-weight:900;white-space:nowrap}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:12px}
+.plan{background:#0a0e1a;border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+.plan.hot{border-color:var(--cyn)}
+.plan .amt{font-size:30px;font-weight:900;color:var(--cyn)}
+.plan ul{list-style:none;font-size:13px;margin:12px 0;line-height:2;color:var(--txt)}
+.plan small{color:var(--mut)}
+.witem{display:flex;gap:8px;align-items:center;background:#0a0e1a;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0;font-size:13px}
+.witem button{margin-left:auto;background:none;border:none;cursor:pointer;font-size:15px}
+.adslot{max-width:1100px;margin:12px auto 0;padding:0 15px;text-align:center}
+.adslot .ph{display:block;border:1px dashed var(--line);border-radius:10px;color:var(--mut);font-size:12px;padding:10px}
+footer{text-align:center;color:var(--mut);font-size:12.5px;padding:26px 16px;border-top:1px solid var(--line);line-height:1.9}
+footer a{color:var(--cyn)}
+#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 25px;border-radius:25px;z-index:200;display:none;font-size:14px;max-width:92vw;text-align:center}
+@media(max-width:640px){table.bt{font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">📡 VulnRadar<small data-i="tag"></small></div>
+<span class="live">● LIVE</span>
+<select id="langSel" onchange="setLang(this.value)">
+<option value="en" selected>🇬🇧 English</option><option value="tr">🇹🇷 Türkçe</option><option value="ar">🇸🇦 العربية</option><option value="fr">🇫🇷 Français</option><option value="de">🇩🇪 Deutsch</option><option value="es">🇪🇸 Español</option>
+</select>
+</header>
+<div class="tabs">
+<button id="tabV" class="on" onclick="tab('V')">🔥 <span data-i="tabV"></span></button>
+<button id="tabB" onclick="tab('B')">🎯 <span data-i="tabB"></span></button>
+<button id="tabE" onclick="tab('E')">🔍 <span data-i="tabE"></span></button>
+<button id="tabA" onclick="tab('A')">🔔 <span data-i="tabA"></span></button>
+</div>
+<main>
+<section class="panel on" id="pV">
+<h2 data-i="vT"></h2><p class="sub" data-i="vS"></p>
+<div class="row">
+<input type="text" id="cveId" placeholder="CVE-2024-12345" style="direction:ltr">
+<button class="go" onclick="lookupCVE()" data-i="btnLook"></button>
+<input type="text" id="venIn" data-i-ph="venPh" style="max-width:150px">
+<input type="text" id="proIn" data-i-ph="proPh" style="max-width:150px">
+<button class="alt" onclick="vendorFilter()" data-i="btnFilter"></button>
+<button class="alt" onclick="loadRecent(true)" data-i="btnRefresh"></button>
+</div>
+<div class="row" style="font-size:12.5px;color:var(--mut)"><span id="syncLine"></span><span id="cntLine" style="margin-left:auto"></span></div>
+<div class="grid" id="cveGrid"></div>
+</section>
+<section class="panel" id="pB">
+<h2 data-i="bT"></h2><p class="sub" data-i="bS"></p>
+<div class="row">
+<select id="fPlat" onchange="renderBounty()"></select>
+<select id="fType" onchange="renderBounty()"></select>
+<input type="text" id="fQ" data-i-ph="searchPh" oninput="renderBounty()">
+</div>
+<div style="overflow-x:auto"><table class="bt"><thead><tr><th data-i="cPlat"></th><th data-i="cProg"></th><th data-i="cType"></th><th data-i="cTier"></th><th data-i="cGo"></th></tr></thead><tbody id="bountyBody"></tbody></table></div>
+</section>
+<section class="panel" id="pE">
+<h2 data-i="eT"></h2><p class="sub" data-i="eS"></p>
+<div class="row"><input type="text" id="expQ" data-i-ph="expPh" style="flex:1;min-width:200px"><button class="go" onclick="expSearch()" data-i="btnSearch"></button></div>
+<div class="row" id="expLinks"></div>
+<div class="grid" id="expGrid"></div>
+</section>
+<section class="panel" id="pA">
+<h2 data-i="aT"></h2><p class="sub" data-i="aS"></p>
+<div class="row"><button class="go" onclick="enableNotif()" data-i="btnNotif"></button><button class="alt" onclick="testNotif()" data-i="btnTest"></button><button class="alt" onclick="exportWL('json')">JSON ⬇</button><button class="alt" onclick="exportWL('csv')">CSV ⬇</button></div>
+<div class="row"><input type="text" id="wlIn" placeholder="CVE-2024-… / keyword" style="direction:ltr"><button class="go" onclick="wlAdd()" data-i="btnAdd"></button></div>
+<div id="wlList"></div>
+<div class="note" data-i="pollNote"></div>
+<h2 style="margin-top:18px" data-i="plansT"></h2>
+<div class="plans">
+<div class="plan"><b data-i="freeN"></b><div class="amt">$0</div><ul><li data-i="fF1"></li><li data-i="fF2"></li><li data-i="fF3"></li><li data-i="fF4"></li></ul><small data-i="adsNote"></small></div>
+<div class="plan hot"><b data-i="proN"></b><div class="amt">$8<small>/mo</small></div><ul><li data-i="fP1"></li><li data-i="fP2"></li><li data-i="fP3"></li><li data-i="fP4"></li></ul><button class="go" onclick="proJoin()" data-i="btnJoin"></button><br><small data-i="proNote"></small></div>
+</div>
+<h2 style="margin-top:18px" data-i="payT"></h2>
+<div class="note" id="payBox"></div>
+</section>
+</main>
+<div class="adslot" id="adFoot"><span class="ph" data-i="adHere"></span></div>
+<footer><span data-i="foot"></span><br>📧 <a href="mailto:baranavisat@gmail.com">baranavisat@gmail.com</a> · 📞 <a href="tel:+905313263722" dir="ltr">+90 531 326 37 22</a> · <a href="https://wa.me/905313263722" target="_blank" rel="noopener">WhatsApp</a><br><a href="README.md" target="_blank">README</a> · MIT · <span data-i="srcNote"></span></footer>
+<div id="toast"></div>
+<script>
+const CONFIG={ads:{client:'',slot:'',carbonServe:'',carbonPlacement:''},pollMin:5};
+const CIRCL='https://cve.circl.lu/api';
+const BOUNTY=[
+{pf:'HackerOne',n:'Shopify',ty:'Web / API',tier:'$$$$',u:'https://www.hackerone.com/bug-bounty-programs'},
+{pf:'HackerOne',n:'Uber',ty:'Web / Mobile',tier:'$$$$',u:'https://www.hackerone.com/bug-bounty-programs'},
+{pf:'HackerOne',n:'Snapchat',ty:'Mobile / Web',tier:'$$$',u:'https://www.hackerone.com/bug-bounty-programs'},
+{pf:'HackerOne',n:'Starbucks',ty:'Web',tier:'$$$',u:'https://www.hackerone.com/bug-bounty-programs'},
+{pf:'HackerOne',n:'PayPal',ty:'Payments',tier:'$$$$',u:'https://www.hackerone.com/bug-bounty-programs'},
+{pf:'HackerOne',n:'HackerOne (dogfood)',ty:'Platform',tier:'$$$',u:'https://www.hackerone.com/bug-bounty-programs'},
+{pf:'Bugcrowd',n:'Tesla',ty:'Automotive / API',tier:'$$$$',u:'https://bugcrowd.com/programs'},
+{pf:'Bugcrowd',n:'Atlassian',ty:'SaaS',tier:'$$$$',u:'https://bugcrowd.com/programs'},
+{pf:'Intigriti',n:'Public Programs (EU)',ty:'Web',tier:'$$$',u:'https://www.intigriti.com'},
+{pf:'YesWeHack',n:'OVHcloud',ty:'Cloud',tier:'$$$',u:'https://yeswehack.com'},
+{pf:'HackenProof',n:'Crypto / Web3',ty:'Web3',tier:'$$$',u:'https://hackenproof.com'},
+{pf:'OpenBugBounty',n:'Open XSS Program',ty:'Web',tier:'$$',u:'https://www.openbugbounty.org'},
+{pf:'Huntr',n:'AI / ML Models',ty:'AI',tier:'$$$$',u:'https://huntr.com'},
+{pf:'Patchstack',n:'WordPress Ecosystem',ty:'CMS',tier:'$$$',u:'https://patchstack.com'}];
+const T={
+en:{tag:'Threat-intel dashboard — live CVE + bounties',tabV:'CVE Tracker',tabB:'Bounty Board',tabE:'Exploit Search',tabA:'Alerts & Pro',
+vT:'🔥 Live CVE Tracker',vS:'Latest CVEs from the public CIRCL feed, auto-refreshed. Severity from CVSS. Click through to NVD/MITRE for details.',
+btnLook:'Lookup',venPh:'vendor (opt)',proPh:'product (opt)',btnFilter:'Filter',btnRefresh:'↻ Refresh',
+bT:'🎯 Bug Bounty Board',bS:'Top bounty platforms and famous programs in one board. Links open the official public directories — always verify scope on the platform.',
+searchPh:'🔍 Search...',cPlat:'Platform',cProg:'Program',cType:'Focus',cTier:'Bounty',cGo:'Open',
+eT:'🔍 Exploit & Advisory Search',eS:'One query across public sources. CVE details load inline; Exploit-DB and NVD open in new tabs (their sites, their rules).',
+expPh:'keyword, product or CVE-ID...',btnSearch:'Search',
+aT:'🔔 Instant Alerts',aS:'Watch CVE-IDs or keywords. Free tier alerts you in this browser (keep the tab open). Pro adds Telegram/Email — backend required, see README.',
+btnNotif:'Enable browser alerts',btnTest:'Send test alert',btnAdd:'Watch',pollNote:'Auto-check every 5 minutes while the page is open.',
+plansT:'💎 Plans',freeN:'Watcher (Free)',proN:'Hunter (Pro)',fF1:'✓ Browser alerts',fF2:'✓ Watchlist + export',fF3:'✓ Live CVE feed',fF4:'✓ With ads',adsNote:'Free forever, supported by ads.',fP1:'✓ Telegram instant alerts',fP2:'✓ Email digest',fP3:'✓ Priority API/export',fP4:'✓ No ads',btnJoin:'Join Pro — $8/mo',proNote:'Pro needs a small backend (Telegram bot + mailer). Your interest is saved; we notify at launch.',
+adHere:'Advertise here — get in touch',foot:'VulnRadar — free defensive intel. Data: CIRCL/NVD (public). Always verify on official sources.',srcNote:'Sources: cve.circl.lu · nvd.nist.gov · exploit-db.com',
+synced:'Synced',items:'items',newW:'NEW',nodata:'No data — check connection & retry.',added:'Watching ✅',dup:'Already watched ⚠️',needQ:'Enter CVE-ID or keyword ⚠️',permOn:'Browser alerts ON ✅',permOff:'Permission denied ⚠️',testT:'VulnRadar test ✅',testB:'Alerts work. Keep this tab open.',foundNew:'new CVE(s) match your watchlist',dlN:'vulnradar-watch',joined:'Interest saved ✅ — we notify at Pro launch.',exp:'Exported ✅',allP:'All platforms',allT:'All types',payT:'💳 Payment Accounts',copyB:'Copy'},
+tr:{tag:'Tehdit paneli — canlı CVE + ödüller',tabV:'CVE Takibi',tabB:'Ödül Panosu',tabE:'Exploit Arama',tabA:'Alarm & Pro',
+vT:'🔥 Canlı CVE Takibi',vS:'Herkese açık CIRCL akışından en yeni CVE\u2019ler, otomatik yenilenir. Şiddet CVSS\u2019e göredir.',
+btnLook:'Sorgula',venPh:'üretici (ops)',proPh:'ürün (ops)',btnFilter:'Filtrele',btnRefresh:'↻ Yenile',
+bT:'🎯 Bug Bounty Panosu',bS:'En iyi platformlar ve ünlü programlar tek panoda. Bağlantılar resmi dizinlere gider — kapsamı platformda doğrulayın.',
+searchPh:'🔍 Ara...',cPlat:'Platform',cProg:'Program',cType:'Alan',cTier:'Ödül',cGo:'Aç',
+eT:'🔍 Exploit & Danışma Arama',eS:'Tek sorgu, açık kaynaklar. CVE detayı sayfada açılır; Exploit-DB ve NVD yeni sekmede (onların sitesi, onların kuralları).',
+expPh:'anahtar kelime, ürün veya CVE-ID...',btnSearch:'Ara',
+aT:'🔔 Anlık Alarmlar',aS:'CVE-ID veya kelime izleyin. Ücretsiz katman bu tarayıcıda uyarır (sekmeyi açık tutun). Pro: Telegram/E-posta — backend gerekir, README\u2019ye bakın.',
+btnNotif:'Tarayıcı alarmını aç',btnTest:'Test alarmı',btnAdd:'İzle',pollNote:'Sayfa açıkken her 5 dakikada otomatik kontrol.',
+plansT:'💎 Planlar',freeN:'Watcher (Ücretsiz)',proN:'Hunter (Pro)',fF1:'✓ Tarayıcı alarmı',fF2:'✓ İzleme + dışa aktar',fF3:'✓ Canlı CVE akışı',fF4:'✓ Reklamlı',adsNote:'Sonsuza dek ücretsiz, reklam destekli.',fP1:'✓ Telegram anlık alarm',fP2:'✓ E-posta özeti',fP3:'✓ Öncelikli API/dışa aktarım',fP4:'✓ Reklamsız',btnJoin:'Pro\u2019ya Katıl — $8/ay',proNote:'Pro küçük bir backend ister (bot + posta). İlginiz kaydedildi.',
+adHere:'Reklamınız burada — iletişim',foot:'VulnRadar — ücretsiz savunma istihbaratı. Veri: CIRCL/NVD (açık). Resmi kaynakta doğrulayın.',srcNote:'Kaynaklar: cve.circl.lu · nvd.nist.gov · exploit-db.com',
+synced:'Eşleşti',items:'kayıt',newW:'YENİ',nodata:'Veri yok — bağlantıyı kontrol edip retry.',added:'İzleniyor ✅',dup:'Zaten izleniyor ⚠️',needQ:'CVE-ID veya kelime yazın ⚠️',permOn:'Alarm açık ✅',permOff:'İzin reddedildi ⚠️',testT:'VulnRadar testi ✅',testB:'Alarmlar çalışıyor. Sekmeyi açık tutun.',foundNew:'yeni CVE izlemenize uydu',dlN:'vulnradar-izleme',joined:'Kaydedildi ✅ — Pro açılışında haber veririz.',exp:'Dışa aktarıldı ✅',allP:'Tüm platformlar',allT:'Tüm alanlar',payT:'💳 Ödeme Hesapları',copyB:'Kopyala'},
+ar:{tag:'لوحة استخبارات — ثغرات حية ومكافآت',tabV:'تتبع CVE',tabB:'لوحة المكافآت',tabE:'بحث إكسبلويت',tabA:'التنبيهات',
+vT:'🔥 تتبع حي للثغرات',vS:'أحدث الثغرات من مصدر CIRCL العام، تتحدث تلقائياً. الخطورة حسب CVSS.',
+btnLook:'استعلم',venPh:'المنتج (اختياري)',proPh:'المنتج (اختياري)',btnFilter:'رشّح',btnRefresh:'↻ حدّث',
+bT:'🎯 لوحة مكافآت الثغرات',bS:'أشهر المنصات والبرامج في لوحة واحدة. الروابط للأدلة الرسمية — تحقق من النطاق في المنصة.',
+searchPh:'🔍 ابحث...',cPlat:'المنصة',cProg:'البرنامج',cType:'المجال',cTier:'المكافأة',cGo:'افتح',
+eT:'🔍 بحث الإكسبلويت',eS:'استعلام واحد عبر مصادر عامة. تفاصيل CVE هنا؛ وExploit-DB وNVD في تبويب جديد.',
+expPh:'كلمة أو منتج أو CVE-ID...',btnSearch:'ابحث',
+aT:'🔔 تنبيهات فورية',aS:'تابع CVE-ID أو كلمات. المجانية تنبه في المتصفح (أبقِ التبويب مفتوحاً). الاحترافية: تيليغرام/بريد — تحتاج backend.',
+btnNotif:'فعّل تنبيهات المتصفح',btnTest:'تنبيه تجريبي',btnAdd:'تابع',pollNote:'فحص تلقائي كل 5 دقائق والصفحة مفتوحة.',
+plansT:'💎 الخطط',freeN:'المراقب (مجاناً)',proN:'الصياد (Pro)',fF1:'✓ تنبيه المتصفح',fF2:'✓ قائمة + تصدير',fF3:'✓ بث حي',fF4:'✓ مع إعلانات',adsNote:'مجاني دائماً بدعم الإعلانات.',fP1:'✓ تنبيه تيليغرام فوري',fP2:'✓ ملخص بريدي',fP3:'✓ أولوية API/تصدير',fP4:'✓ بدون إعلانات',btnJoin:'اشترك Pro — $8/شهر',proNote:'تحتاج backend صغيراً. سُجل اهتمامك.',
+adHere:'مساحتك الإعلانية هنا',foot:'VulnRadar — استخبارات دفاعية مجانية. تحقق من المصادر الرسمية.',srcNote:'المصادر: cve.circl.lu · nvd.nist.gov · exploit-db.com',
+synced:'تمت المزامنة',items:'عنصر',newW:'جديد',nodata:'لا بيانات — تحقق من الاتصال.',added:'تُتابَع ✅',dup:'مُتابعة مسبقاً ⚠️',needQ:'اكتب CVE-ID أو كلمة ⚠️',permOn:'التنبيه مفعّل ✅',permOff:'رُفض الإذن ⚠️',testT:'تجربة ✅',testB:'التنبيه يعمل. أبقِ التبويب مفتوحاً.',foundNew:'ثغرات تطابق قائمتك',dlN:'vulnradar',joined:'حُفظ ✅ — سنخبرك عند الإطلاق.',exp:'صُدّر ✅',allP:'كل المنصات',allT:'كل المجالات',payT:'💳 حسابات الدفع',copyB:'نسخ'},
+fr:{tag:'Veille menaces — CVE en direct',tabV:'Suivi CVE',tabB:'Bounties',tabE:'Recherche',tabA:'Alertes & Pro',
+vT:'🔥 Suivi CVE en direct',vS:'Derniers CVE du flux public CIRCL, actualisé auto. Gravité selon CVSS.',
+btnLook:'Chercher',venPh:'éditeur (opt)',proPh:'produit (opt)',btnFilter:'Filtrer',btnRefresh:'↻ Actualiser',
+bT:'🎯 Panneau Bug Bounty',bS:'Plateformes et programmes célèbres en un panneau. Liens vers annuaires officiels.',
+searchPh:'🔍 Chercher...',cPlat:'Plateforme',cProg:'Programme',cType:'Domaine',cTier:'Prime',cGo:'Ouvrir',
+eT:'🔍 Recherche exploits',eS:'Une requête, sources publiques. Détail CVE ici ; Exploit-DB et NVD en nouvel onglet.',
+expPh:'mot-clé, produit ou CVE-ID...',btnSearch:'Chercher',
+aT:'🔔 Alertes instantanées',aS:'Suivez CVE-ID/mots. Gratuit : alertes navigateur (onglet ouvert). Pro : Telegram/E-mail — backend requis.',
+btnNotif:'Activer les alertes',btnTest:'Alerte test',btnAdd:'Suivre',pollNote:'Contrôle auto toutes les 5 min.',
+plansT:'💎 Offres',freeN:'Watcher (Gratuit)',proN:'Hunter (Pro)',fF1:'✓ Alertes navigateur',fF2:'✓ Suivi + export',fF3:'✓ Flux CVE live',fF4:'✓ Avec pubs',adsNote:'Gratuit, soutenu par pubs.',fP1:'✓ Alertes Telegram',fP2:'✓ Résumé e-mail',fP3:'✓ API/export prio',fP4:'✓ Sans pubs',btnJoin:'Pro — $8/mois',proNote:'Pro requiert un mini-backend. Intérêt enregistré.',
+adHere:'Publicité ici — contact',foot:'VulnRadar — veille défensive gratuite. Vérifiez les sources officielles.',srcNote:'Sources : cve.circl.lu · nvd.nist.gov · exploit-db.com',
+synced:'Synchro',items:'éléments',newW:'NOUVEAU',nodata:'Pas de données — réessayez.',added:'Suivi ✅',dup:'Déjà suivi ⚠️',needQ:'CVE-ID ou mot-clé ⚠️',permOn:'Alertes ON ✅',permOff:'Refusé ⚠️',testT:'Test ✅',testB:'Alertes OK. Gardez l\u2019onglet ouvert.',foundNew:'nouveaux CVE suivis',dlN:'vulnradar',joined:'Enregistré ✅.',exp:'Exporté ✅',allP:'Toutes plateformes',allT:'Tous domaines',payT:'💳 Comptes',copyB:'Copier'},
+de:{tag:'Threat-Panel — live CVEs + Bounties',tabV:'CVE-Tracking',tabB:'Bounty-Board',tabE:'Exploit-Suche',tabA:'Alarme & Pro',
+vT:'🔥 Live-CVE-Tracking',vS:'Neueste CVEs aus öffentlichem CIRCL-Feed, auto-aktuell. Schwere nach CVSS.',
+btnLook:'Suchen',venPh:'Hersteller (opt)',proPh:'Produkt (opt)',btnFilter:'Filtern',btnRefresh:'↻ Neu',
+bT:'🎯 Bug-Bounty-Board',bS:'Top-Plattformen und Programme in einem Board. Links zu offiziellen Verzeichnissen.',
+searchPh:'🔍 Suchen...',cPlat:'Plattform',cProg:'Programm',cType:'Fokus',cTier:'Prämie',cGo:'Öffnen',
+eT:'🔍 Exploit-Suche',eS:'Eine Anfrage, öffentliche Quellen. CVE-Detail hier; Exploit-DB und NVD in neuem Tab.',
+expPh:'Stichwort, Produkt oder CVE-ID...',btnSearch:'Suchen',
+aT:'🔔 Sofort-Alarme',aS:'CVE-IDs/Wörter beobachten. Gratis: Browser-Alarm (Tab offen). Pro: Telegram/E-Mail — Backend nötig.',
+btnNotif:'Alarme aktivieren',btnTest:'Test-Alarm',btnAdd:'Beobachten',pollNote:'Auto-Check alle 5 Min.',
+plansT:'💎 Pläne',freeN:'Watcher (Gratis)',proN:'Hunter (Pro)',fF1:'✓ Browser-Alarm',fF2:'✓ Liste + Export',fF3:'✓ Live-Feed',fF4:'✓ Mit Werbung',adsNote:'Für immer gratis, werbefinanziert.',fP1:'✓ Telegram-Alarm',fP2:'✓ E-Mail-Digest',fP3:'✓ Prio-API/Export',fP4:'✓ Werbefrei',btnJoin:'Pro — $8/Mo.',proNote:'Pro braucht Mini-Backend. Interesse gespeichert.',
+adHere:'Werbung hier — Kontakt',foot:'VulnRadar — freie defensive Intel. Offizielle Quellen prüfen.',srcNote:'Quellen: cve.circl.lu · nvd.nist.gov · exploit-db.com',
+synced:'Sync',items:'Einträge',newW:'NEU',nodata:'Keine Daten — erneut versuchen.',added:'Beobachtet ✅',dup:'Schon beobachtet ⚠️',needQ:'CVE-ID/Wort eingeben ⚠️',permOn:'Alarm AN ✅',permOff:'Verweigert ⚠️',testT:'Test ✅',testB:'Alarme OK. Tab offen halten.',foundNew:'neue CVEs auf Liste',dlN:'vulnradar',joined:'Gespeichert ✅.',exp:'Exportiert ✅',allP:'Alle Plattformen',allT:'Alle Bereiche',payT:'💳 Konten',copyB:'Kopieren'},
+es:{tag:'Panel de amenazas — CVE en vivo',tabV:'CVE',tabB:'Bounties',tabE:'Búsqueda',tabA:'Alertas y Pro',
+vT:'🔥 CVE en vivo',vS:'Últimos CVE del feed público CIRCL, auto-actualizado. Gravedad por CVSS.',
+btnLook:'Buscar',venPh:'fabricante (opc)',proPh:'producto (opc)',btnFilter:'Filtrar',btnRefresh:'↻ Actualizar',
+bT:'🎯 Panel Bug Bounty',bS:'Plataformas y programas famosos en un panel. Enlaces a directorios oficiales.',
+searchPh:'🔍 Buscar...',cPlat:'Plataforma',cProg:'Programa',cType:'Foco',cTier:'Recompensa',cGo:'Abrir',
+eT:'🔍 Búsqueda de exploits',eS:'Una consulta, fuentes públicas. Detalle CVE aquí; Exploit-DB y NVD en pestaña nueva.',
+expPh:'palabra, producto o CVE-ID...',btnSearch:'Buscar',
+aT:'🔔 Alertas instantáneas',aS:'Sigue CVE-ID/palabras. Gratis: alertas del navegador (pestaña abierta). Pro: Telegram/Email — requiere backend.',
+btnNotif:'Activar alertas',btnTest:'Alerta test',btnAdd:'Seguir',pollNote:'Auto-chequeo cada 5 min.',
+plansT:'💎 Planes',freeN:'Watcher (Gratis)',proN:'Hunter (Pro)',fF1:'✓ Alertas navegador',fF2:'✓ Lista + exportar',fF3:'✓ Feed en vivo',fF4:'✓ Con anuncios',adsNote:'Gratis siempre, con anuncios.',fP1:'✓ Alertas Telegram',fP2:'✓ Resumen email',fP3:'✓ API/export prio',fP4:'✓ Sin anuncios',btnJoin:'Pro — $8/mes',proNote:'Pro requiere mini-backend. Interés guardado.',
+adHere:'Anúnciate aquí — contacto',foot:'VulnRadar — intel defensiva gratis. Verifica fuentes oficiales.',srcNote:'Fuentes: cve.circl.lu · nvd.nist.gov · exploit-db.com',
+synced:'Sincro',items:'ítems',newW:'NUEVO',nodata:'Sin datos — reintenta.',added:'Siguiendo ✅',dup:'Ya seguido ⚠️',needQ:'CVE-ID o palabra ⚠️',permOn:'Alertas ON ✅',permOff:'Denegado ⚠️',testT:'Test ✅',testB:'Alertas OK. Mantén la pestaña.',foundNew:'nuevos CVE seguidos',dlN:'vulnradar',joined:'Guardado ✅.',exp:'Exportado ✅',allP:'Todas',allT:'Todos',payT:'💳 Cuentas',copyB:'Copiar'}};
+let lang='en';
+const t=k=>(T[lang]&&T[lang][k])||T.en[k]||k;
+function setLang(v){lang=v;document.documentElement.lang=v;document.documentElement.dir=(v==='ar')?'rtl':'ltr';document.getElementById('langSel').value=v;
+document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=t(e.dataset.i);});
+document.querySelectorAll('[data-i-ph]').forEach(e=>{e.placeholder=t(e.dataset.iPh);});
+renderAll();}
+function tab(w){['V','B','E','A'].forEach(k=>{document.getElementById('tab'+k).classList.toggle('on',w===k);document.getElementById('p'+k).classList.toggle('on',w===k);});}
+function toast(m){let d=document.getElementById('toast');d.textContent=m;d.style.display='block';clearTimeout(d._h);d._h=setTimeout(()=>d.style.display='none',2400);}
+function sGet(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
+function sSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+async function jget(p){const r=await fetch(CIRCL+p);if(!r.ok)throw new Error('http');return r.json();}
+function cvssOf(c){const v=parseFloat(c.cvss);return isNaN(v)?null:v;}
+function sevOf(v){if(v==null)return 'na';if(v>=9)return 'crit';if(v>=7)return 'high';if(v>=4)return 'med';return 'low';}
+function fmtD(s){try{const d=new Date((s||'').replace('T',' ').split('.')[0]+'Z');return isNaN(d)?(s||'—'):d.toLocaleDateString();}catch(e){return s||'—';}}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+let cache=[],seenIds=sGet('vr_seen',[]),watch=sGet('vr_watch',[]),notifOn=sGet('vr_notif',false);
+function matchW(c){const s=(c.summary||'').toLowerCase();return watch.filter(w=>{w=(w||'').toLowerCase();return (c.id||'').toLowerCase()===w||(w.length>2&&s.includes(w));});}
+function cardHTML(c,isNew){
+const v=cvssOf(c),s=sevOf(v);
+return `<div class="card ${s}"><span class="cid">${esc(c.id||'?')}</span><span class="badge">${v==null?'n/a':v.toFixed(1)}</span>${isNew?`<span class="newtag">${t('newW')}</span>`:''}<p class="sum">${esc((c.summary||'').slice(0,280))}</p><small>📅 ${fmtD(c.Published)} · ✏️ ${fmtD(c.Modified)}</small><div class="refs"><a target="_blank" rel="noopener" href="https://nvd.nist.gov/vuln/detail/${esc(c.id||'')}">NVD</a><a target="_blank" rel="noopener" href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=${esc(c.id||'')}">MITRE</a><a target="_blank" rel="noopener" href="https://www.exploit-db.com/search?q=${encodeURIComponent(c.id||'')}">Exploit-DB</a></div></div>`;
+}
+function renderCVE(list,newIds){
+newIds=newIds||{};
+document.getElementById('cveGrid').innerHTML=list.length?list.map(c=>cardHTML(c,!!newIds[c.id])).join(''):`<p style="color:var(--mut)">${t('nodata')}</p>`;
+document.getElementById('cntLine').textContent=list.length+' '+t('items');
+}
+function markSeen(list){let changed=false;list.forEach(c=>{if(c.id&&seenIds.indexOf(c.id)<0){seenIds.push(c.id);changed=true;}});if(changed)sSet('vr_seen',seenIds.slice(-600));}
+function notify(title,body){try{if(notifOn&&'Notification' in window&&Notification.permission==='granted'){new Notification(title,{body:String(body).slice(0,140)});}}catch(e){}}
+async function loadRecent(silent){
+const v=document.getElementById('venIn').value.trim(),p=document.getElementById('proIn').value.trim();
+let path='/last',fallback=null;
+if(v){path='/last/'+encodeURIComponent(v)+(p?'/'+encodeURIComponent(p):'');fallback={v:v.toLowerCase(),p:p.toLowerCase()};}
+try{
+let list=await jget(path);
+if(!Array.isArray(list))list=[];
+if(fallback)list=list.filter(c=>((c.summary||'').toLowerCase().indexOf(fallback.v)>=0)&&(!fallback.p||(c.summary||'').toLowerCase().indexOf(fallback.p)>=0));
+const fresh={};list.forEach(c=>{if(c.id&&seenIds.indexOf(c.id)<0) fresh[c.id]=1;});
+const wasEmpty=!cache.length;
+if(!wasEmpty&&Object.keys(fresh).length){
+const hits=list.filter(c=>fresh[c.id]&&matchW(c).length);
+if(hits.length)notify('VulnRadar: '+hits.length+' '+t('foundNew'),hits.slice(0,3).map(c=>c.id).join(', '));
+}
+cache=list;renderCVE(list,(!wasEmpty&&Object.keys(fresh).length)?fresh:{});markSeen(list);
+document.getElementById('syncLine').textContent='✓ '+t('synced')+' '+new Date().toLocaleTimeString();
+}catch(e){if(!silent){document.getElementById('cveGrid').innerHTML='<p style="color:var(--mut)">'+t('nodata')+'</p>';}}
+}
+async function lookupCVE(){
+const id=document.getElementById('cveId').value.trim().toUpperCase();
+if(!/^CVE-\d{4}-\d+$/i.test(id)){toast(t('needQ'));return;}
+try{const c=await jget('/cve/'+encodeURIComponent(id));cache=[c];renderCVE([c]);markSeen([c]);}
+catch(e){toast(t('nodata'));}
+}
+async function vendorFilter(){await loadRecent();}
+function renderBounty(){
+const plats=[...new Set(BOUNTY.map(b=>b.pf))],types=[...new Set(BOUNTY.map(b=>b.ty))];
+const fp=document.getElementById('fPlat');
+if(!fp.options.length){fp.innerHTML='<option value="">'+t('allP')+'</option>'+plats.map(p=>`<option>${p}</option>`).join('');
+document.getElementById('fType').innerHTML='<option value="">'+t('allT')+'</option>'+types.map(x=>`<option>${x}</option>`).join('');}
+const q=document.getElementById('fQ').value.trim().toLowerCase();
+const list=BOUNTY.filter(b=>(!fp.value||b.pf===fp.value)&&(!document.getElementById('fType').value||b.ty===document.getElementById('fType').value)&&(!q||(b.n+' '+b.ty).toLowerCase().includes(q)));
+document.getElementById('bountyBody').innerHTML=list.map(b=>`<tr><td><b>${b.pf}</b></td><td>${b.n}</td><td>${b.ty}</td><td class="tier">${b.tier}</td><td><a target="_blank" rel="noopener" href="${b.u}">${t('cGo')} ↗</a></td></tr>`).join('');
+}
+function expSearch(){
+const q=document.getElementById('expQ').value.trim();
+if(q.length<2){toast(t('needQ'));return;}
+document.getElementById('expLinks').innerHTML=`<div class="note">“${esc(q)}” → <a target="_blank" rel="noopener" style="color:var(--blu)" href="https://www.exploit-db.com/search?q=${encodeURIComponent(q)}">Exploit-DB</a> · <a target="_blank" rel="noopener" style="color:var(--blu)" href="https://nvd.nist.gov/vuln/search/results?form_type=Basic&results_type=overview&query=${encodeURIComponent(q)}">NVD</a> · <a target="_blank" rel="noopener" style="color:var(--blu)" href="https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=${encodeURIComponent(q)}">MITRE</a></div>`;
+if(/^CVE-\d{4}-\d+$/i.test(q)){jget('/cve/'+encodeURIComponent(q.toUpperCase())).then(c=>{document.getElementById('expGrid').innerHTML=cardHTML(c,false);}).catch(()=>{});}
+else document.getElementById('expGrid').innerHTML='';
+}
+function wlAdd(){const v=document.getElementById('wlIn').value.trim();if(v.length<3){toast(t('needQ'));return;}
+if(watch.map(w=>w.toLowerCase()).indexOf(v.toLowerCase())>=0){toast(t('dup'));return;}
+watch.push(v);sSet('vr_watch',watch);document.getElementById('wlIn').value='';renderWL();toast(t('added'));}
+function wlDel(i){watch.splice(i,1);sSet('vr_watch',watch);renderWL();}
+function renderWL(){document.getElementById('wlList').innerHTML=watch.length?watch.map((w,i)=>`<div class="witem"><span>${esc(w)}</span><button onclick="wlDel(${i})">❌</button></div>`).join(''):'';}
+function enableNotif(){try{if(!('Notification' in window)){toast(t('permOff'));return;}
+Notification.requestPermission().then(p=>{notifOn=(p==='granted');sSet('vr_notif',notifOn);toast(notifOn?t('permOn'):t('permOff'));});}catch(e){toast(t('permOff'));}}
+function testNotif(){notify(t('testT'),t('testB'));if(!notifOn)toast(t('permOff'));}
+function dl(name,content,type){const b=new Blob([content],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();}
+function exportWL(fmt2){
+const rows=cache.filter(c=>matchW(c).length||!watch.length).slice(0,200);
+if(fmt2==='csv'){dl(t('dlN')+'.csv','id,cvss,published,summary\n'+rows.map(c=>`"${c.id}",${cvssOf(c)==null?'':cvssOf(c)},"${c.Published||''}","${(c.summary||'').replace(/"/g,'')}")`).join('\n'),'text/csv');}
+else dl(t('dlN')+'.json',JSON.stringify(rows,null,1),'application/json');
+toast(t('exp'));}
+function proJoin(){try{const L=sGet('vr_pro',[]);L.unshift({time:new Date().toLocaleString()});sSet('vr_pro',L);}catch(e){}toast(t('joined'));}
+function loadAds(){const A=CONFIG.ads,el=document.getElementById('adFoot');if(!el)return;
+if(A.client){const s=document.createElement('script');s.async=true;s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+A.client;s.crossOrigin='anonymous';document.head.appendChild(s);
+el.innerHTML='<ins class="adsbygoogle" style="display:block" data-ad-client="'+A.client+'" data-ad-slot="'+(A.slot||'')+'" data-ad-format="auto"></ins>';
+try{(window.adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}}
+else if(A.carbonServe){const s=document.createElement('script');s.async=true;s.id='_carbonads_js';s.src='//cdn.carbonads.com/carbon.js?serve='+A.carbonServe+'&placement='+A.carbonPlacement;el.innerHTML='';el.appendChild(s);}}
+const PAY={btc:'bc1q8dhtdrndxsl70e97t8grydfe6pjue37zrhzf6c',usdt:'TLWdTjqqogkXNEXGiPWsGdjFP6ioycxeWW',name:'Baran Avisat',try:'TR10 0001 0090 1008 4013 0050 01',usd:'TR80 0001 0090 1008 4013 0050 02'};
+function copyTxt(x){try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(x);}catch(e){}toast(x);}
+function renderPayBox(){const el=document.getElementById('payBox');if(!el)return;
+const row=(l,v)=>`<div style="margin:6px 0"><b>${l}:</b> <code style="direction:ltr;display:inline-block">${v}</code> <button class="alt sm" onclick="copyTxt('${v.replace(/ /g,'')}')">${t('copyB')}</button></div>`;
+el.innerHTML=row('₿ BTC',PAY.btc)+row('₮ USDT-TRC20',PAY.usdt)+`<div style="margin:6px 0"><b>🏦 ${PAY.name}</b></div>`+row('TRY',PAY.try)+row('USD',PAY.usd);}
+function renderAll(){renderCVE(cache);renderBounty();renderWL();renderPayBox();
+document.getElementById('fPlat').innerHTML='';renderBounty();}
+setLang('en');loadAds();loadRecent();setInterval(()=>loadRecent(true),CONFIG.pollMin*60000);
+</script>
+</body>
+</html>
