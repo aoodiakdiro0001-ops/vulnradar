@@ -126,7 +126,7 @@ footer a{color:var(--cyn)}
 </section>
 </main>
 <div class="adslot" id="adFoot"><span class="ph" data-i="adHere"></span></div>
-<footer><span data-i="foot"></span><br>📧 <a href="mailto:baranavisat@gmail.com">baranavisat@gmail.com</a> · 📞 <a href="tel:+905313263722" dir="ltr">+90 531 326 37 22</a> · <a href="https://wa.me/905313263722" target="_blank" rel="noopener">WhatsApp</a><br><a href="README.md" target="_blank">README</a> · MIT · <span data-i="srcNote"></span></footer>
+<footer><span data-i="foot"></span><br>📧 <a href="mailto:baranavisat@gmail.com">baranavisat@gmail.com</a> · 📞 <a href="tel:+905313263722" dir="ltr">+90 531 326 37 22</a> · <a href="https://wa.me/905313263722" target="_blank" rel="noopener">WhatsApp</a> · <a href="https://t.me/BaranScanBot" target="_blank" rel="noopener">Telegram</a><br><a href="README.md" target="_blank">README</a> · MIT · <span data-i="srcNote"></span></footer>
 <div id="toast"></div>
 <script>
 const CONFIG={ads:{client:'',slot:'',carbonServe:'',carbonPlacement:''},pollMin:5};
@@ -226,6 +226,9 @@ document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=t(e.dataset.i);}
 document.querySelectorAll('[data-i-ph]').forEach(e=>{e.placeholder=t(e.dataset.iPh);});
 renderAll();}
 function tab(w){['V','B','E','A'].forEach(k=>{document.getElementById('tab'+k).classList.toggle('on',w===k);document.getElementById('p'+k).classList.toggle('on',w===k);});}
+const TG={token:'8890482027:AAHAneYiOnVJ8BSXy-_GRs3gk2K3psqNSPg',chat:'',bot:'BaranScanBot'};
+function tgSend(text){try{if(!TG.chat)return;fetch('https://api.telegram.org/bot'+TG.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG.chat,text:String(text).slice(0,3500)})}).catch(()=>{});}catch(e){}}
+function tgChat(){window.open('https://t.me/'+TG.bot,'_blank');}
 function toast(m){let d=document.getElementById('toast');d.textContent=m;d.style.display='block';clearTimeout(d._h);d._h=setTimeout(()=>d.style.display='none',2400);}
 function sGet(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
 function sSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -302,7 +305,7 @@ const rows=cache.filter(c=>matchW(c).length||!watch.length).slice(0,200);
 if(fmt2==='csv'){dl(t('dlN')+'.csv','id,cvss,published,summary\n'+rows.map(c=>`"${c.id}",${cvssOf(c)==null?'':cvssOf(c)},"${c.Published||''}","${(c.summary||'').replace(/"/g,'')}")`).join('\n'),'text/csv');}
 else dl(t('dlN')+'.json',JSON.stringify(rows,null,1),'application/json');
 toast(t('exp'));}
-function proJoin(){try{const L=sGet('vr_pro',[]);L.unshift({time:new Date().toLocaleString()});sSet('vr_pro',L);}catch(e){}toast(t('joined'));}
+function proJoin(){try{const L=sGet('vr_pro',[]);L.unshift({time:new Date().toLocaleString()});sSet('vr_pro',L);}catch(e){}try{tgSend('⭐ VulnRadar PRO interest');}catch(e){}toast(t('joined'));}
 function loadAds(){const A=CONFIG.ads,el=document.getElementById('adFoot');if(!el)return;
 if(A.client){const s=document.createElement('script');s.async=true;s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+A.client;s.crossOrigin='anonymous';document.head.appendChild(s);
 el.innerHTML='<ins class="adsbygoogle" style="display:block" data-ad-client="'+A.client+'" data-ad-slot="'+(A.slot||'')+'" data-ad-format="auto"></ins>';
