@@ -226,8 +226,8 @@ document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=t(e.dataset.i);}
 document.querySelectorAll('[data-i-ph]').forEach(e=>{e.placeholder=t(e.dataset.iPh);});
 renderAll();}
 function tab(w){['V','B','E','A'].forEach(k=>{document.getElementById('tab'+k).classList.toggle('on',w===k);document.getElementById('p'+k).classList.toggle('on',w===k);});}
-const TG={token:'8890482027:AAHAneYiOnVJ8BSXy-_GRs3gk2K3psqNSPg',chat:'',bot:'BaranScanBot'};
-function tgSend(text){try{if(!TG.chat)return;fetch('https://api.telegram.org/bot'+TG.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG.chat,text:String(text).slice(0,3500)})}).catch(()=>{});}catch(e){}}
+const TG={token:'',chat:'',bot:'BaranScanBot'};/* PRIVATE deploy only: fill token+chat locally, NEVER commit secrets */
+function tgSend(text){try{if(!TG.token||!TG.chat)return;fetch('https://api.telegram.org/bot'+TG.token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG.chat,text:String(text).slice(0,3500)})}).catch(()=>{});}catch(e){}}
 function tgChat(){window.open('https://t.me/'+TG.bot,'_blank');}
 function toast(m){let d=document.getElementById('toast');d.textContent=m;d.style.display='block';clearTimeout(d._h);d._h=setTimeout(()=>d.style.display='none',2400);}
 function sGet(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
